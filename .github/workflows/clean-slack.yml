@@ -1,0 +1,21 @@
+name: Clean Slack Messages
+
+on:
+  schedule:
+    # Every hour
+    - cron: "0 * * * *"
+  workflow_dispatch:
+
+jobs:
+  clean:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests
+      - name: Run cleaner
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        run: python clean_slack.py
