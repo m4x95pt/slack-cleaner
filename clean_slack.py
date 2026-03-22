@@ -20,7 +20,6 @@ def slack_post(url, data=None):
     return r.json()
 
 def get_channels():
-    """Fetch all channels the bot is a member of (public + private)."""
     channels = []
     cursor = None
     while True:
@@ -40,7 +39,6 @@ def get_channels():
     return channels
 
 def get_pinned_ts(channel_id):
-    """Return a set of timestamps of pinned messages in a channel."""
     data = slack_get("https://slack.com/api/pins.list", {"channel": channel_id})
     if not data.get("ok"):
         return set()
@@ -52,7 +50,6 @@ def get_pinned_ts(channel_id):
     return pinned
 
 def get_messages(channel_id):
-    """Fetch all messages in a channel."""
     messages = []
     cursor = None
     while True:
@@ -70,11 +67,12 @@ def get_messages(channel_id):
     return messages
 
 def delete_message(channel_id, ts):
-    """Delete a single message."""
     data = slack_post("https://slack.com/api/chat.delete", {
         "channel": channel_id,
         "ts": ts,
     })
+    if not data.get("ok"):
+        print(f"  ❌ Failed to delete {ts}: {data.get('error')}")
     return data.get("ok")
 
 def clean_channel(channel):
@@ -82,8 +80,9 @@ def clean_channel(channel):
     channel_name = channel.get("name", channel_id)
     print(f"\n#{channel_name}")
 
-    pinned = get_pinned_ts(channel_id)
+    pinned   = get_pinned_ts(channel_id)
     messages = get_messages(channel_id)
+    print(f"  Found {len(messages)} message(s), {len(pinned)} pinned")
 
     deleted = 0
     skipped = 0
@@ -92,12 +91,9 @@ def clean_channel(channel):
         if ts in pinned:
             skipped += 1
             continue
-        # Rate limit: Slack allows ~1 delete/sec on free tier
         ok = delete_message(channel_id, ts)
         if ok:
             deleted += 1
-        else:
-            print(f"  Failed to delete {ts}")
         time.sleep(1.2)
 
     print(f"  Deleted: {deleted} | Skipped (pinned): {skipped}")
@@ -105,7 +101,7 @@ def clean_channel(channel):
 def main():
     print("🧹 Starting Slack cleaner...")
     channels = get_channels()
-    print(f"Found {len(channels)} channel(s) the bot is a member of.")
+    print(f"Found {len(channels)} channel(s).")
     for ch in channels:
         clean_channel(ch)
     print("\n✅ Done!")
