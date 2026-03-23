@@ -15,26 +15,45 @@ A GitHub Actions workflow runs every hour, triggering a Python script that:
 
 ### 1. Slack App permissions
 
-Go to [api.slack.com/apps](https://api.slack.com/apps) → your app → **OAuth & Permissions** and add these **Bot Token Scopes**:
+Go to [api.slack.com/apps](https://api.slack.com/apps) → your app → **OAuth & Permissions**.
+
+Add these **Bot Token Scopes**:
 
 - `channels:history`
 - `channels:read`
-- `chat:write`
 - `groups:history`
 - `groups:read`
 - `pins:read`
 
-Reinstall the app to your workspace after adding scopes.
+Add these **User Token Scopes**:
 
-### 2. GitHub Secret
+- `chat:write`
+- `channels:history`
+- `channels:read`
+- `groups:history`
+- `groups:read`
+- `pins:read`
+
+After adding the scopes, click **Reinstall to Workspace** at the top of the page.
+
+> **Why User Token?** The Slack API only allows deleting messages sent by others when using a User OAuth Token (`xoxp-`). A Bot Token (`xoxb-`) can only delete the bot's own messages.
+
+### 2. Invite the bot to your channels
+
+In each Slack channel you want to clean, invite the app:
+
+1. Click the channel name → **Integrations** → **Add apps**
+2. Search for your app and add it
+
+### 3. GitHub Secret
 
 Add the following secret to this repository under **Settings → Secrets and variables → Actions**:
 
 | Secret            | Value                                  |
 | ----------------- | -------------------------------------- |
-| `SLACK_BOT_TOKEN` | Your Bot User OAuth Token (`xoxb-...`) |
+| `SLACK_BOT_TOKEN` | Your **User** OAuth Token (`xoxp-...`) |
 
-### 3. Deploy
+### 4. Deploy
 
 Push this repo to GitHub. The workflow will run automatically every hour.
 You can also trigger it manually via **Actions → Clean Slack Messages → Run workflow**.
